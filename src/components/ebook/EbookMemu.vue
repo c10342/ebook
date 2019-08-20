@@ -1,7 +1,7 @@
 <template>
   <div>
     <transition name="slide-up">
-      <div class="menu-wrapper" :class="{'hide-box-shadow': !menuVisible}" v-show="menuVisible">
+      <div class="menu-wrapper" :class="{'hide-box-shadow': !menuVisible || settingVisible>=0}" v-show="menuVisible">
         <div class="icon-wrapper">
           <span class="icon-menu icon" @click="showSetting(3)"></span>
         </div>
@@ -16,19 +16,25 @@
         </div>
       </div>
     </transition>
+    <ebook-setting-font></ebook-setting-font>
+    <ebook-setting-font-popup></ebook-setting-font-popup>
   </div>
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import {ebookMixin} from '../../utils/mixin'
+import EbookSettingFont from './EbookSettingFont'
+import EbookSettingFontPopup from './EbookSettingFontPopup'
 export default {
-  methods: {
-    showSetting() {}
+  mixins:[ebookMixin],
+  components:{
+    EbookSettingFont,
+    EbookSettingFontPopup
   },
-  computed: {
-    ...mapGetters({
-      menuVisible: "book/menuVisible"
-    })
+  methods: {
+    showSetting(key) {
+      this.setSettingVisible(key)
+    }
   }
 };
 </script>
