@@ -1,4 +1,5 @@
 import { mapGetters, mapMutations } from 'vuex'
+import { themeList, removeAllCss, addCss } from "./book";
 
 export const ebookMixin = {
     computed: {
@@ -22,7 +23,10 @@ export const ebookMixin = {
             pagelist: 'book/pagelist',
             offsetY: 'book/offsetY',
             isBookmark: 'book/isBookmark'
-        })
+        }),
+        themeList() {
+            return themeList(this);
+        }
     },
     methods: {
         ...mapMutations({
@@ -46,5 +50,26 @@ export const ebookMixin = {
             setOffsetY: 'book/setOffsetY',
             setIsBookmark: 'book/setIsBookmark'
         }),
+        initGlobalStyle() {
+            const baseUrl = process.env.VUE_APP_BASE_URL
+            removeAllCss()
+            switch (this.defaultTheme) {
+                case 'Default':
+                    addCss(`${baseUrl}/theme/theme_default.css`)
+                    break
+                case 'Eye':
+                    addCss(`${baseUrl}/theme/theme_eye.css`)
+                    break
+                case 'Gold':
+                    addCss(`${baseUrl}/theme/theme_gold.css`)
+                    break
+                case 'Night':
+                    addCss(`${baseUrl}/theme/theme_night.css`)
+                    break
+                default:
+                    addCss(`${baseUrl}/theme/theme_default.css`)
+                    break
+            }
+        }
     }
 }

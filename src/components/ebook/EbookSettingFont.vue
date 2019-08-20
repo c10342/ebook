@@ -69,7 +69,7 @@ export default {
   left: 0;
   z-index: 101;
   width: 100%;
-  height: 0.6rem;
+  height: 0.9rem;
   background: white;
   box-shadow: 0 -0.08rem 0.08rem rgba(0, 0, 0, 0.15);
   display: flex;
