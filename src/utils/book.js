@@ -1,3 +1,4 @@
+import {getReadTime} from './localStorage'
 export const FONT_SIZE_LIST = [
   { fontSize: 12 },
   { fontSize: 14 },
@@ -61,28 +62,42 @@ export function themeList(vue) {
   ]
 }
 
-export function addCss(href){
+export function addCss(href) {
   const link = document.createElement('link')
-  link.setAttribute('rel','stylesheet')
-  link.setAttribute('type','text/css')
-  link.setAttribute('href',href)
+  link.setAttribute('rel', 'stylesheet')
+  link.setAttribute('type', 'text/css')
+  link.setAttribute('href', href)
   document.getElementsByTagName('head')[0].appendChild(link)
 }
 
-export function removeCss(href){
+export function removeCss(href) {
   const links = document.getElementsByTagName('link')
   for (let i = links.length; i >= 0; i--) {
     const link = links[i];
-    if(link && link.getAttribute('href') && link.getAttribute('href') === href){
+    if (link && link.getAttribute('href') && link.getAttribute('href') === href) {
       link.parentNode.removeChild(link)
     }
   }
 }
 
-export function removeAllCss(){
+export function removeAllCss() {
   const baseUrl = process.env.VUE_APP_BASE_URL
   removeCss(`${baseUrl}/theme/theme_default.css`)
   removeCss(`${baseUrl}/theme/theme_eye.css`)
   removeCss(`${baseUrl}/theme/theme_gold.css`)
   removeCss(`${baseUrl}/theme/theme_night.css`)
+}
+
+export function getReadTimeByMinute(fileName) {
+  const readTime = getReadTime(fileName)
+  if (!readTime) {
+    return 0
+  } else {
+    return Math.ceil(readTime / 60)
+  }
+}
+
+// 将多维数组扁平为一维
+export function flatten(array){
+  return [].concat(...array.map(item=>[].concat(item,...flatten(item.subitems))))
 }

@@ -1,6 +1,7 @@
 import { mapGetters, mapMutations } from 'vuex'
 import { themeList, removeAllCss, addCss } from "./book";
 import { saveLocation } from "./localStorage";
+import { getReadTimeByMinute } from './book'
 
 export const ebookMixin = {
     computed: {
@@ -76,16 +77,18 @@ export const ebookMixin = {
         refreshLocation() {
             // 获取当前位置
             const currentLocation = this.currentBook.rendition.currentLocation();
-            const startCfi = currentLocation.start.cfi
-            // 根据cfi获取当前进度百分比
-            const progress = this.currentBook.locations.percentageFromCfi(
-                startCfi
-            );
-            // 保存章节
-            this.setSection(currentLocation.start.index)
-            this.setProgress(Math.floor(progress * 100));
-            // 保存当前章节内容
-            saveLocation(this.fileName, startCfi)
+            if (currentLocation && currentLocation.start && currentLocation.start.cfi) {
+                const startCfi = currentLocation.start.cfi
+                // 根据cfi获取当前进度百分比
+                const progress = this.currentBook.locations.percentageFromCfi(
+                    startCfi
+                );
+                // 保存章节
+                this.setSection(currentLocation.start.index)
+                this.setProgress(Math.floor(progress * 100));
+                // 保存当前章节内容
+                saveLocation(this.fileName, startCfi)
+            }
         },
         display(target, cb) {
             if (target) {
@@ -109,5 +112,9 @@ export const ebookMixin = {
             this.setFontFamilyVisible(false);
             this.setSettingVisible(-1);
         },
+
+        getReadTimeText() {
+            return this.$t('book.haveRead').replace('$1', getReadTimeByMinute(this.fileName))
+        }
     }
 }

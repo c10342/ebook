@@ -3,7 +3,7 @@
     <div class="setting-wrapper" v-show="menuVisible && settingVisible === 2">
       <div class="setting-progress">
         <div class="read-time-wrapper">
-          <span class="read-time-text">{{getReadTimeText}}</span>
+          <span class="read-time-text">{{getReadTimeText()}}</span>
           <span class="icon-forward"></span>
         </div>
         <div class="progress-wrapper">
@@ -37,7 +37,6 @@
 
 <script>
 import { ebookMixin } from "../../utils/mixin";
-import { getReadTime } from '../../utils/localStorage';
 
 export default {
   mixins: [ebookMixin],
@@ -57,7 +56,7 @@ export default {
         this.progress / 100
       );
       // 渲染该页的内容
-      this.display(cfi)
+      this.display(cfi);
       // this.currentBook.rendition.display(cfi).then(()=>{
       //   this.refreshLocation()
       // });
@@ -93,33 +92,23 @@ export default {
         // this.currentBook.rendition.display(sectionInfo.href).then(() => {
         //   this.refreshLocation();
         // });
-        this.displayProgress(sectionInfo.href)
-      }
-    },
-    getReadTimeByMinute(){
-      const readTime = getReadTime(this.fileName)
-      if(!readTime){
-        return 0
-      }else{
-        return Math.ceil(readTime / 60)
+        this.displayProgress(sectionInfo.href);
       }
     }
   },
   computed: {
     // 获取章节名称
     getSectionName() {
-      if (this.section) {
-        // 获取当前章节
-        const sectionInfo = this.currentBook.section(this.section);
-        if (sectionInfo && sectionInfo.href) {
-          // 获取章节名称
-          return this.currentBook.navigation.get(sectionInfo.href).label;
-        }
-      }
-      return "";
-    },
-    getReadTimeText(){
-      return this.$t('book.haveRead').replace('$1',this.getReadTimeByMinute())
+      // if (this.section) {
+      //   // 获取当前章节
+      //   const sectionInfo = this.currentBook.section(this.section);
+      //   if (sectionInfo && sectionInfo.href) {
+      //     // 获取章节名称
+      //     return this.currentBook.navigation.get(sectionInfo.href).label;
+      //   }
+      // }
+      // return "";
+      return this.section&&this.navigation ? this.navigation[this.section].label : "";
     }
   },
   updated() {

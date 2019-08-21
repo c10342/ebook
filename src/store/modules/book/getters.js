@@ -34,3 +34,5 @@ export const pagelist = state => state.pagelist
 export const offsetY = state => state.offsetY
 
 export const isBookmark = state => state.isBookmark
+
+export const navigation = state => state.navigation

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div id="read"></div>
-    <!-- <div class="mask" @touchstart="touchstart" @touchend="touchend"></div> -->
+    <div class="mask" @touchstart="touchstart" @touchend="touchend"></div>
   </div>
 </template>
 
@@ -16,13 +16,15 @@ import {
   saveTheme,
   getLocation
 } from "../../utils/localStorage";
+import { flatten } from "../../utils/book";
 import Epub from "epubjs";
 global.ePub = Epub;
 export default {
   mixins: [ebookMixin],
   mounted() {
     // const filename = this.$route.params.filename;
-    const filename = "Biomedicine|2014_Book_Self-ReportedPopulationHealthA";
+    const filename =
+      "Biomedicine|2015_Book_ContemporaryBioethics";
     if (filename) {
       const files = filename.split("|").join("/");
       this.setFileName(files);
@@ -37,6 +39,7 @@ export default {
       this.book = Epub(url);
       this.setCurrentBook(this.book);
       this.initRendition();
+      this.parseBook();
       // 电子书解析完成
       this.book.ready.then(() => {
         // 分页
@@ -47,7 +50,7 @@ export default {
           .then(location => {
             this.setBookAvailable(true);
             // 分页完成刷新进度
-            this.refreshLocation()
+            this.refreshLocation();
           });
       });
     },
@@ -111,7 +114,7 @@ export default {
         this.initFontFamily();
         this.initFontSize();
         this.initGlobalStyle();
-        this.initGuest();
+        // this.initGuest();
       });
 
       // this.rendition.display().then(() => {
@@ -189,6 +192,43 @@ export default {
         }
         event.preventDefault();
         event.stopPropagation();
+      });
+    },
+    // 获取书籍某些信息
+    parseBook() {
+      // 获取书籍封面
+      this.book.loaded.cover.then(cover => {
+        // cover 封面名称
+        this.book.archive.createUrl(cover).then(url => {
+          // url封面地址
+          this.setCover(url);
+        });
+      });
+
+      // 获取书籍信息
+      this.book.loaded.metadata.then(metadata => {
+        this.setMetadata(metadata);
+      });
+
+      // 获取书籍目录
+      this.book.loaded.navigation.then(nav => {
+        // 将目录扁平为一维数组
+        const navItem = flatten(nav.toc);
+
+        // 找出目录之间的对应关系,0一级，1二级，2三级....
+        function find(item, level = 0) {
+          return !item.parent
+            ? level
+            : find(
+                navItem.filter(parentItem => parentItem.id == item.parent)[0],
+                ++level
+              );
+        }
+
+        navItem.forEach(item => {
+          item.level = find(item);
+        });
+        this.setNavigation(navItem);
       });
     }
   }

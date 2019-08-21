@@ -1,23 +1,50 @@
 <template>
   <transition name="fade">
-  <div class="slide-content-wrapper" v-show="menuVisible && settingVisible === 3">
-    <transition name="slide-right" v-if="settingVisible === 3">
-      <div class="content">
-        <div class="content-page-wrapper">
-          <div class="content-page"></div>
-          <div class="content-page-tab"></div>
+    <div class="slide-content-wrapper" v-show="menuVisible && settingVisible === 3">
+      <transition name="slide-right" v-if="settingVisible === 3">
+        <div class="content">
+          <div class="content-page-wrapper">
+            <div class="content-page">
+              <component :is="currentTab == 1?content:bookMark"></component>
+            </div>
+            <div class="content-page-tab">
+              <div
+                class="content-page-tab-item"
+                :class="{'selected': currentTab === 1}"
+                @click="selectTab(1)"
+              >{{$t('book.navigation')}}</div>
+              <div
+                class="content-page-tab-item"
+                :class="{'selected': currentTab === 2}"
+                @click="selectTab(2)"
+              >{{$t('book.bookmark')}}</div>
+            </div>
+          </div>
         </div>
-      </div>
-    </transition>
-    <div class="content-bg" @click="hideTitleAndMenu()"></div>
-  </div>
+      </transition>
+      <div class="content-bg" @click="hideTitleAndMenu()"></div>
+    </div>
   </transition>
 </template>
 
 <script>
 import { ebookMixin } from "../../utils/mixin";
+import EbookSlideContent from "./EbookSlideContent";
+import EbookSlideBookmark from "./EbookSlideBookmark";
 export default {
-  mixins: [ebookMixin]
+  mixins: [ebookMixin],
+  data() {
+    return {
+      currentTab: 1,
+      content: EbookSlideContent,
+      bookMark: EbookSlideBookmark
+    };
+  },
+  methods: {
+    selectTab(index) {
+      this.currentTab = index;
+    }
+  }
 };
 </script>
 
@@ -74,7 +101,7 @@ export default {
 .fade-leave-active,
 .slide-right-enter-active,
 .slide-right-leave-active {
-  transition: all .3s linear;
+  transition: all 0.3s linear;
 }
 
 .fade-enter,

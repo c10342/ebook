@@ -6,8 +6,40 @@
     align-items: center;
 }
 
+.left {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.top {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+
 .ellipsis {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
+}
+
+.ellipsis2(@line: 1) {
+    display: -moz-box;
+    -moz-box-orient: vertical;
+    -moz-line-clamp: @line;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: @line;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: keep-all;
 }
