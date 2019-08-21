@@ -3,7 +3,7 @@
     <div class="setting-wrapper" v-show="menuVisible && settingVisible === 2">
       <div class="setting-progress">
         <div class="read-time-wrapper">
-          <span class="read-time-text">123</span>
+          <span class="read-time-text">{{getReadTimeText}}</span>
           <span class="icon-forward"></span>
         </div>
         <div class="progress-wrapper">
@@ -27,7 +27,7 @@
           </div>
         </div>
         <div class="text-wrapper">
-          <span class="progress-section-text">666</span>
+          <span class="progress-section-text">{{getSectionName}}</span>
           <span>({{bookAvailable ? progress + '%' : '加载中...'}})</span>
         </div>
       </div>
@@ -37,13 +37,14 @@
 
 <script>
 import { ebookMixin } from "../../utils/mixin";
+import { getReadTime } from '../../utils/localStorage';
 
 export default {
   mixins: [ebookMixin],
   methods: {
     onProgressChange(progress) {
-    //   this.setProgress(progress);
-    //   this.displayProgress();
+      //   this.setProgress(progress);
+      //   this.displayProgress();
     },
     onProgressInput(progress) {
       this.setProgress(progress);
@@ -56,7 +57,10 @@ export default {
         this.progress / 100
       );
       // 渲染该页的内容
-      this.currentBook.rendition.display(cfi);
+      this.display(cfi)
+      // this.currentBook.rendition.display(cfi).then(()=>{
+      //   this.refreshLocation()
+      // });
     },
     updateProgressBg() {
       // ${this.progress}%  进度条左侧,即小球的左侧部分,
@@ -64,30 +68,62 @@ export default {
       this.$refs.progress.style.backgroundSize = `${this.progress}% 100%`;
     },
     prevSection() {
-        // 章节大于0并且已经准备完成
-        if(this.section >0 && this.bookAvailable){
-            this.setSection(this.section - 1)
-            this.displaySection()
-        }
+      // 章节大于0并且已经准备完成
+      if (this.section > 0 && this.bookAvailable) {
+        this.setSection(this.section - 1);
+        this.displaySection();
+      }
     },
     nextSection() {
-        // this.currentBook.spine.length 总章节，章节从0开始需要减1
-        if(this.section < this.currentBook.spine.length-1 && this.bookAvailable){
-            this.setSection(this.section + 1)
-            this.displaySection()
-        }
+      // this.currentBook.spine.length 总章节，章节从0开始需要减1
+      if (
+        this.section < this.currentBook.spine.length - 1 &&
+        this.bookAvailable
+      ) {
+        this.setSection(this.section + 1);
+        this.displaySection();
+      }
     },
     // 显示章节
-    displaySection(){
-        // 获取章节信息
-        const sectionInfo = this.currentBook.section(this.section)
-        if(sectionInfo && sectionInfo.href){
-            this.currentBook.rendition.display(sectionInfo.href)
-        }
+    displaySection() {
+      // 获取章节信息
+      const sectionInfo = this.currentBook.section(this.section);
+      if (sectionInfo && sectionInfo.href) {
+        // 显示章节信息
+        // this.currentBook.rendition.display(sectionInfo.href).then(() => {
+        //   this.refreshLocation();
+        // });
+        this.displayProgress(sectionInfo.href)
+      }
+    },
+    getReadTimeByMinute(){
+      const readTime = getReadTime(this.fileName)
+      if(!readTime){
+        return 0
+      }else{
+        return Math.ceil(readTime / 60)
+      }
     }
   },
-  updated(){
-      this.updateProgressBg()
+  computed: {
+    // 获取章节名称
+    getSectionName() {
+      if (this.section) {
+        // 获取当前章节
+        const sectionInfo = this.currentBook.section(this.section);
+        if (sectionInfo && sectionInfo.href) {
+          // 获取章节名称
+          return this.currentBook.navigation.get(sectionInfo.href).label;
+        }
+      }
+      return "";
+    },
+    getReadTimeText(){
+      return this.$t('book.haveRead').replace('$1',this.getReadTimeByMinute())
+    }
+  },
+  updated() {
+    this.updateProgressBg();
   }
 };
 </script>

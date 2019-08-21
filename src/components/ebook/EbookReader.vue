@@ -1,7 +1,7 @@
 <template>
   <div>
     <div id="read"></div>
-    <div class="mask" @touchstart="touchstart" @touchend="touchend"></div>
+    <!-- <div class="mask" @touchstart="touchstart" @touchend="touchend"></div> -->
   </div>
 </template>
 
@@ -13,7 +13,8 @@ import {
   getFontSize,
   saveFontSize,
   getTheme,
-  saveTheme
+  saveTheme,
+  getLocation
 } from "../../utils/localStorage";
 import Epub from "epubjs";
 global.ePub = Epub;
@@ -34,15 +35,21 @@ export default {
       const baseUrl = process.env.VUE_APP_BASE_URL;
       const url = `${baseUrl}/epub/${this.fileName}.epub`;
       this.book = Epub(url);
-      this.initRendition();
       this.setCurrentBook(this.book);
+      this.initRendition();
       // 电子书解析完成
-      this.book.ready.then(()=>{
+      this.book.ready.then(() => {
         // 分页
-        return this.book.locations.generate(750*(window.innerWidth/375)*(getFontSize(this.fileName)/16)).then(location=>{
-          this.setBookAvailable(true)
-        })
-      })
+        return this.book.locations
+          .generate(
+            750 * (window.innerWidth / 375) * (getFontSize(this.fileName) / 16)
+          )
+          .then(location => {
+            this.setBookAvailable(true);
+            // 分页完成刷新进度
+            this.refreshLocation()
+          });
+      });
     },
     touchstart(event) {
       this.touchStartX = event.changedTouches[0].clientX;
@@ -67,14 +74,18 @@ export default {
     prevPage() {
       if (this.rendition) {
         this.hideTitleAndMenu();
-        this.rendition.prev();
+        this.rendition.prev().then(() => {
+          this.refreshLocation();
+        });
       }
     },
     // 下一页
     nextPage() {
       if (this.rendition) {
         this.hideTitleAndMenu();
-        this.rendition.next();
+        this.rendition.next().then(() => {
+          this.refreshLocation();
+        });
       }
     },
     toggleTitleAndMenu() {
@@ -84,11 +95,6 @@ export default {
       this.setFontFamilyVisible(false);
       this.setMenuVisible(!this.menuVisible);
     },
-    hideTitleAndMenu() {
-      this.setMenuVisible(false);
-      this.setFontFamilyVisible(false);
-      this.setSettingVisible(-1);
-    },
     initRendition() {
       const baseUrl = process.env.VUE_APP_BASE_URL;
       // 解析电子书
@@ -97,14 +103,22 @@ export default {
         height: window.innerHeight,
         method: "default" //兼容微信
       });
+      // 获取是否存在进度
+      const location = getLocation(this.fileName);
       // 显示电子书
-      this.rendition.display().then(() => {
+      this.display(location, () => {
         this.initTheme();
         this.initFontFamily();
         this.initFontSize();
         this.initGlobalStyle();
+        this.initGuest();
       });
 
+      // this.rendition.display().then(() => {
+
+      // });
+
+      // 内容准备完成
       this.rendition.hooks.content.register(contents => {
         // 往iframe中添加样式文件
         // contents.addStylesheet(`${baseUrl}/fonts/cabin.css`)
@@ -127,6 +141,7 @@ export default {
         saveFontSize(this.fileName, this.defaultFontSize);
       } else {
         this.setDefaultFontSize(fontSize);
+        // 设置字体
         this.rendition.themes.fontSize(fontSize);
       }
     },
@@ -136,6 +151,7 @@ export default {
         saveFontFamily(this.fileName, this.defaultFontFamily);
       } else {
         this.setDefaultFontFamily(font);
+        // 设置字体样式
         this.rendition.themes.font(font);
       }
     },
@@ -154,6 +170,7 @@ export default {
       this.rendition.themes.select(defaultTheme);
     },
     initGuest() {
+      // 监听手势
       this.rendition.on("touchstart", event => {
         this.touchStartX = event.changedTouches[0].clientX;
         this.timeStamp = event.timeStamp;
