@@ -1,7 +1,13 @@
 <template>
   <div>
     <div id="read"></div>
-    <div class="mask" @touchstart="touchstart" @touchend="touchend"></div>
+    <div
+      class="mask"
+      @click="handleClick"
+      @touchstart="handleTouchstart"
+      @touchmove="handleTouchmove"
+      @touchend="handleTouchend"
+    ></div>
   </div>
 </template>
 
@@ -23,8 +29,7 @@ export default {
   mixins: [ebookMixin],
   mounted() {
     // const filename = this.$route.params.filename;
-    const filename =
-      "Biomedicine|2015_Book_ContemporaryBioethics";
+    const filename = "Biomedicine|2015_Book_ContemporaryBioethics";
     if (filename) {
       const files = filename.split("|").join("/");
       this.setFileName(files);
@@ -53,6 +58,33 @@ export default {
             this.refreshLocation();
           });
       });
+    },
+    handleClick(e) {
+      const offsetX = e.offsetX;
+      const width = window.innerWidth;
+      if (offsetX < width * 0.3) {
+        this.prevPage();
+      } else if (offsetX > width * 0.7) {
+        this.nextPage();
+      } else {
+        this.toggleTitleAndMenu();
+      }
+    },
+    handleTouchstart() {},
+    handleTouchend() {
+      this.setOffsetY(0);
+      this.firstOffsetY = null;
+    },
+    handleTouchmove(e) {
+      let offsetY = 0
+      if (this.firstOffsetY) {
+        offsetY = e.changedTouches[0].clientY - this.firstOffsetY;
+        this.setOffsetY(offsetY);
+      } else {
+        this.firstOffsetY = e.changedTouches[0].clientY;
+      }
+      e.preventDefault();
+      e.stopPropagation();
     },
     touchstart(event) {
       this.touchStartX = event.changedTouches[0].clientX;

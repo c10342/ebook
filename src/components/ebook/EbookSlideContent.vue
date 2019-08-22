@@ -11,6 +11,7 @@
           v-model="searchText"
           :placeholder="$t('book.searchHint')"
           @click="showSearchPage"
+          @keyup.enter.exact='search'
         />
       </div>
       <div
@@ -50,7 +51,7 @@
         <!-- <span class="slide-contents-item-page">{{item.page}}</span> -->
       </div>
     </scroll>
-    <!-- <scroll class="slide-search-list" :top="66" :bottom="48" v-show="searchVisible">
+    <scroll class="slide-search-list" :top="66" :bottom="48" v-show="searchVisible">
       <div
         class="slide-search-item"
         v-for="(item, index) in searchList"
@@ -58,7 +59,7 @@
         v-html="item.excerpt"
         @click="displayContent(item.cfi, true)"
       ></div>
-    </scroll>-->
+    </scroll>
   </div>
 </template>
 
@@ -74,13 +75,41 @@ export default {
   data() {
     return {
       searchText: "",
-      searchVisible: false
+      searchVisible: false,
+      searchList:[]
     };
   },
   methods: {
-    displayContent(target) {
+    search(){
+      if(this.searchText && this.searchText.length>0){
+        this.doSearch(this.searchText).then(list=>{
+          // 对关键词进行高亮显示
+          list = list.map(item=>{
+            item.excerpt = item.excerpt.replace(this.searchText,`<span class="content-search-text">${this.searchText}</span>`)
+            return item
+          })
+          this.searchList = list
+        })
+      }
+    },
+    // 全文搜索
+    doSearch(q) {
+      return Promise.all(
+        this.currentBook.spine.spineItems.map(section =>
+          section
+            .load(this.currentBook.load.bind(this.currentBook))
+            .then(section.find.bind(section, q))
+            .finally(section.unload.bind(section))
+        )
+      ).then(results => Promise.resolve([].concat.apply([], results)));//二维数组变一维数组
+    },
+    displayContent(target,highLight=false) {
       this.display(target, () => {
         this.hideTitleAndMenu();
+        if(highLight){
+          // 进行高亮显示
+          this.currentBook.rendition.annotations.highlight(target)
+        }
       });
     },
     showSearchPage() {
@@ -88,6 +117,8 @@ export default {
     },
     hideSearchPage() {
       this.searchVisible = false;
+      this.searchText = ''
+      this.searchList = []
     },
     contentItemStyle(item) {
       return `${px2rem(item.level * 15)}rem`;
