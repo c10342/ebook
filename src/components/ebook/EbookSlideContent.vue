@@ -47,7 +47,7 @@
           :style="contentItemStyle(item)"
           @click="displayContent(item.href)"
         >{{item.label}}</span>
-        <span class="slide-contents-item-page">{{item.page}}</span>
+        <!-- <span class="slide-contents-item-page">{{item.page}}</span> -->
       </div>
     </scroll>
     <!-- <scroll class="slide-search-list" :top="66" :bottom="48" v-show="searchVisible">
@@ -199,6 +199,8 @@ export default {
       padding: 0.2rem 0;
       box-sizing: border-box;
       .slide-contents-item-label {
+        // width: 2.5rem;
+        // overflow: hidden;
         flex: 1;
         font-size: 0.14rem;
         line-height: 0.16rem;

@@ -92,7 +92,7 @@ export const ebookMixin = {
         },
         display(target, cb) {
             if (target) {
-                this.currentBook.rendition.display(target).then(() => {
+                this.currentBook.rendition.display(target).then((e) => {
                     this.refreshLocation()
                     if (cb) {
                         cb()

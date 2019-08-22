@@ -92,7 +92,7 @@ export default {
         // this.currentBook.rendition.display(sectionInfo.href).then(() => {
         //   this.refreshLocation();
         // });
-        this.displayProgress(sectionInfo.href);
+        this.display(sectionInfo.href);
       }
     }
   },
